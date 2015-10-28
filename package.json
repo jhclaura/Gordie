@@ -1,0 +1,25 @@
+{
+  "name": "gordie",
+  "version": "0.0.0",
+  "description": "Gordie forever.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhclaura/Gordie.git"
+  },
+  "author": "Laura Chen | jhclaura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jhclaura/Gordie/issues"
+  },
+  "homepage": "https://github.com/jhclaura/Gordie",
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "engine": {
+    "node": "0.10.26"
+  }
+}
