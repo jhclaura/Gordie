@@ -229,16 +229,16 @@ function init() {
 	setTimeout(resize, 1);
 
 	// texture
-	var pp = THREE.ImageUtils.loadTexture('images/R0010108.png');
+	var pp = THREE.ImageUtils.loadTexture('images/R0010108.JPG');
 	photos.push(pp);
 
-	pp = THREE.ImageUtils.loadTexture('images/R0010109.png');
+	pp = THREE.ImageUtils.loadTexture('images/R0010109.JPG');
 	photos.push(pp);
 
-	pp = THREE.ImageUtils.loadTexture('images/R0010111.png');
+	pp = THREE.ImageUtils.loadTexture('images/R0010111.JPG');
 	photos.push(pp);
 
-	pp = THREE.ImageUtils.loadTexture('images/R0010112.png');
+	pp = THREE.ImageUtils.loadTexture('images/R0010112.JPG');
 	photos.push(pp);
 
 	ballMat = new THREE.MeshBasicMaterial({map: photos[0]});
