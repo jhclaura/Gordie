@@ -102,10 +102,6 @@ var time;
 
 var clock = new THREE.Clock();
 
-var photoFileRoutes = ["images/R0010108.JPG", "images/R0010109.JPG", "images/R0010111.JPG", "images/R0010112.JPG"];
-var inTheZone, pastChange;
-//
-
 init();
 animate();
 
@@ -137,6 +133,37 @@ function init() {
 	// camera = new THREE.PerspectiveCamera(90, 1, 0.001, 700);
 	camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000);
 
+	// v_1
+	// camera.position.set(0, 10, 0);
+	// scene.add(camera);
+	/*
+		controls = new THREE.OrbitControls(camera, renderElement);
+		controls.rotateUp(Math.PI / 4);
+		controls.target.set(
+			camera.position.x + 0.1,
+			camera.position.y,
+			camera.position.z
+		);
+
+		controls.noZoom = true;
+		controls.noPan = true;
+
+		function setOrientationControls(e) {
+			if (!e.alpha) {
+				return;
+			}
+
+			controls = new THREE.DeviceOrientationControls(camera, true);
+			controls.connect();
+			controls.update();
+
+			renderElement.addEventListener('click', fullscreen, false);
+
+			window.removeEventListener('deviceorientation', setOrientationControls, true);
+		}
+		window.addEventListener('deviceorientation', setOrientationControls, true);
+	*/
+
 	// v_Laura
 	controls = new THREE.DeviceControls(camera, true);
 	scene.add( controls.getObject() );
@@ -151,10 +178,33 @@ function init() {
 	light.position.set(1,1,1);
 	scene.add(light);
 
+	var texture = THREE.ImageUtils.loadTexture(
+		'textures/patterns/checker.png'
+	);
+
+	texture.wrapS = THREE.RepeatWrapping;
+	texture.wrapT = THREE.RepeatWrapping;
+	texture.repeat = new THREE.Vector2(50, 50);
+	texture.anisotropy = renderer.getMaxAnisotropy();
+
+	var material = new THREE.MeshPhongMaterial({
+		color: 0xffffff,
+		specular: 0xffffff,
+		shininess: 20,
+		shading: THREE.FlatShading,
+		map: texture
+	});
+
+	var geometry = new THREE.PlaneGeometry(1000, 1000);
+
+	var mesh = new THREE.Mesh(geometry, material);
+	mesh.rotation.x = -Math.PI / 2;
+	// scene.add(mesh);
+
 	// test cubes
-	var geometry = new THREE.SphereGeometry(1);
-	var material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
-	var mesh;
+	geometry = new THREE.SphereGeometry(1);
+	material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
+
 	for(var i=0; i<50; i+=10){
 		for(var j=0; j<50; j+=10){
 			mesh = new THREE.Mesh(geometry, material);
@@ -163,17 +213,11 @@ function init() {
 			boxes.push(mesh);
 		}
 	}
-
-
-	var onTouchStart = function ( event ) {
-		// console.log("touch!");
-		picIndex++;
-		ball.material.map = photos[picIndex%4];
-	}
 	
+
 	window.addEventListener('resize', resize, false);
 	document.addEventListener( 'keydown', myKeyPressed, false );
-	document.addEventListener( 'keyup', myKeyReleased, false );
+	// document.addEventListener( 'keyup', myKeyReleased, false );
 
 	if(isMobile) {
 		document.addEventListener( 'touchstart', onTouchStart, false );
@@ -183,10 +227,17 @@ function init() {
 	setTimeout(resize, 1);
 
 	// texture
-	for(var i=0; i<photoFileRoutes.length; i++){
-		var pp = THREE.ImageUtils.loadTexture( photoFileRoutes[i] );
-		photos.push(pp);
-	}
+	var pp = THREE.ImageUtils.loadTexture('images/R0010108.JPG');
+	photos.push(pp);
+
+	pp = THREE.ImageUtils.loadTexture('images/R0010109.JPG');
+	photos.push(pp);
+
+	pp = THREE.ImageUtils.loadTexture('images/R0010111.JPG');
+	photos.push(pp);
+
+	pp = THREE.ImageUtils.loadTexture('images/R0010112.JPG');
+	photos.push(pp);
 
 	ballMat = new THREE.MeshBasicMaterial({map: photos[0]});
 
@@ -200,7 +251,7 @@ function loadModelBall(model, material) {
 	var loader = new THREE.JSONLoader();
 	loader.load(model, function(geometry){
 		ball = new THREE.Mesh( geometry, material );
-		ball.scale.set(5,5,5);
+		ball.scale.set(10,10,10);
 		scene.add(ball);
 	}, "js");
 }
@@ -216,7 +267,16 @@ function myKeyPressed (event) {
 		case 49: //1 --> p1
 			console.log("touch!");
 			picIndex++;
-			ball.material.map = photos[picIndex%photoFileRoutes.length];
+			ball.material.map = photos[picIndex%4];
+			break;
+
+		case 50: //2 --> p2
+			break;
+
+		case 51: //3 --> p3
+			break;
+
+		case 52: //4 --> test
 			break;
 	}
 }
@@ -226,8 +286,24 @@ function myKeyReleased (event) {
 	switch ( event.keyCode ) {
 
 		case 77: //M --> stop moving forward
+			controls.setMoveF(false);
 			break;
 
+	}
+}
+
+
+
+var onTouchStart = function ( event ) {
+	console.log("touch!");
+	picIndex++;
+	ball.material.map = photos[picIndex%4];
+
+	for(var i=0; i<roomExploded.length; i++){
+		roomExploded[i] = !roomExploded[i];
+	}
+	for(var i=0; i<windowExploded.length; i++){
+		windowExploded[i] = !windowExploded[i];
 	}
 }
 
@@ -257,18 +333,13 @@ function update(dt) {
 
 	var conRot = controls.rotation().y%3;
 
-	// once conRot is in the zone of -0.0 ~ -1.5
+	// once conRot is between -0.5~-1
 	// picture: changes
 	// audio: 1)changes; 2)fade in out
-	if(conRot<-0.0 && conRot>-1.5){
-		if(!inTheZone){
-			picIndex++;
-			ball.material.map = photos[picIndex%photoFileRoutes.length];
-			console.log("picture: changes");
-			inTheZone = true;
-		}
+	if(conRot<-0.5 && conRot>-1 && !currPass){
+		currPass = true;
 	}else{
-		inTheZone = false;
+
 	}
 	// console.log(conRott);
 

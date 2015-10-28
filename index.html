@@ -24,6 +24,15 @@
     }
     console.log("isMobile: " + isMobile);
 
+    // tell android or iOS
+    if( /Android/i.test(navigator.userAgent) ) {
+      console.log("I'm anroid!");
+    }
+
+    if( /iPhone/i.test(navigator.userAgent) ) {
+      console.log("I'm iPhone!");
+    }
+
     // if it's desktop, create click.gif div
     // reference:
       // <div id="blocker" style="display: -webkit-box;">
