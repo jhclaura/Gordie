@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Gordie</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+
+    <div id="render_canvas"></div>
+
+  <script src="js/third-party/threejs/three.js"></script>
+  <script src="js/third-party/threejs/StereoEffect.js"></script>
+
+  <script src="js/DeviceControls_laura.js"></script>
+
+  <script>
+    //device detection
+    //source: http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
+    var isMobile = false; //initiate as false
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+      isMobile = true;
+    }
+    console.log("isMobile: " + isMobile);
+
+    // if it's desktop, create click.gif div
+    // reference:
+      // <div id="blocker" style="display: -webkit-box;">
+      //     <div id="instructions" >
+      //       <img width="60" height="60" src="images/click.gif">
+      //     </div>
+      //   </div>
+    if( !isTouchDevice() ) {
+        var clickDiv = document.createElement('div');
+        clickDiv.id = "blocker";
+        clickDiv.style = "display: -webkit-box;";
+        document.getElementsByTagName("body")[0].appendChild(clickDiv);
+
+        var ins = document.createElement('div');
+        ins.id = "instructions";
+        var fingerImg = document.createElement('img');
+        fingerImg.setAttribute("src", "images/click.gif");
+        fingerImg.setAttribute("width", "60");
+        fingerImg.setAttribute("height", "60");
+        ins.appendChild(fingerImg);
+        clickDiv.appendChild(ins);
+    }
+  </script>
+
+  <script src="js/script.js"></script>
+
+  </body>
+</html>
