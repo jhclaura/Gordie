@@ -133,7 +133,7 @@
 	context = new AudioContext();
 
 	//
-	var sample = new SoundsSample(context);
+	// var sample = new SoundsSample(context);
 	var sweetSource;
 
 	//
@@ -200,14 +200,14 @@ function init() {
 	var geometry = new THREE.SphereGeometry(1);
 	var material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
 	var mesh;
-	for(var i=0; i<50; i+=10){
-		for(var j=0; j<50; j+=10){
-			mesh = new THREE.Mesh(geometry, material);
-			mesh.position.set(i-25,0,j-25);
-			scene.add(mesh);
-			boxes.push(mesh);
-		}
-	}
+	// for(var i=0; i<50; i+=10){
+	// 	for(var j=0; j<50; j+=10){
+	// 		mesh = new THREE.Mesh(geometry, material);
+	// 		mesh.position.set(i-25,0,j-25);
+	// 		scene.add(mesh);
+	// 		boxes.push(mesh);
+	// 	}
+	// }
 
 	//
 	var onTouchStart = function ( event ) {
@@ -241,8 +241,9 @@ function init() {
 	animate();
 
 	// audio!
-	if(samplesAllLoaded)
-		sample.trigger(0, 1);
+	if(samplesAllLoaded){
+		// sample.trigger(0, 1);
+	}
 }
 
 function finishedLoading(bufferList){
@@ -258,7 +259,7 @@ function finishedLoading(bufferList){
 	sound_sweet.source.buffer = bufferList[0];
 	sound_sweet.source.loop = true;
 	sound_sweet.gainNode = context.createGain();
-	sound_sweet.gainNode.gain.value = 1;
+	sound_sweet.gainNode.gain.value = 2;
 	sound_sweet.source.connect(sound_sweet.gainNode);
 
 	sound_sweet.panner = context.createPanner();
@@ -271,9 +272,10 @@ function finishedLoading(bufferList){
 
 	//
 	// Sweet source
-	geometry = new THREE.SphereGeometry(2);
+	geometry = new THREE.SphereGeometry(1);
 	material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 	sweetSource = new THREE.Mesh(geometry, material);
+	sweetSource.scale.set(0.01,0.01,0.01);
 	sweetSource.position.set(0,0,5);
 	scene.add(sweetSource);
 
@@ -291,6 +293,8 @@ function finishedLoading(bufferList){
 	sswM.elements[12] = sswX;
 	sswM.elements[13] = sswY;
 	sswM.elements[14] = sswZ;
+
+	console.log("finish loading!");
 }
 
 function loadModelBall(model, material) {
@@ -359,12 +363,16 @@ function update(dt) {
 	// once conRot is in the zone of -0.0 ~ -1.5
 	// picture: changes
 	// audio: 1)changes; 2)fade in out
-	if(conRot<-0.0 && conRot>-1.5){
+	if(ball && conRot<-0.0 && conRot>-1.5){
 		if(!inTheZone){
 			picIndex++;
 			ball.material.map = photos[picIndex%photoFileRoutes.length];
-			console.log("picture: changes");
+			// console.log("picture: changes");
 			inTheZone = true;
+
+			//
+			// if(samplesAllLoaded)
+			// 	sample.trigger(picIndex,1);
 		}
 	}else{
 		inTheZone = false;
