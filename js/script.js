@@ -90,26 +90,80 @@
 	}
 
 
-// adapted from vr.chromeExperience
-var camera, scene, renderer;
-var effect, controls;
-var renderElement, container;
+// Three.js
+	var camera, scene, renderer;
+	var effect, controls;
+	var renderElement, container;
 
-var ball, ballMat;
-var photos=[];
-var boxes=[];
-var time;
+	var ball, ballMat;
+	var photos=[];
+	var boxes=[];
+	var time;
 
-var clock = new THREE.Clock();
+	var clock = new THREE.Clock();
 
-var photoFileRoutes = ["images/R0010108.JPG", "images/R0010109.JPG", "images/R0010111.JPG", "images/R0010112.JPG"];
-var inTheZone, pastChange;
+	//var photoFileRoutes = ["images/R0010108.JPG", "images/R0010109.JPG", "images/R0010111.JPG", "images/R0010112.JPG"];
+	var photoFileRoutes = ["images/0_empty.JPG", "images/1_John.JPG", "images/2_Rosalie.JPG",
+						   "images/3_Dan.JPG", "images/4_Laura.JPG", "images/5_Marianne.JPG",
+						   "images/6_George.JPG", "images/7_Matt.JPG", "images/8_Tom.JPG",
+						   "images/9_Midori.JPG", "images/10_Shiffman.JPG", "images/11_John_Matt.JPG",
+						   "images/12_Gabriel.JPG", "images/13_Danny.JPG", "images/14_Katherine.JPG",
+						   "images/15_Gabe.JPG", "images/16_Nancy.JPG", "images/17_Shawn.JPG",
+						   "images/18_Mimi.JPG", "images/19_Lauren.JPG", "images/20_Marlon.JPG",
+						   "images/21_Pedro.JPG", "images/22_Sam.JPG", "images/23_Oryan.JPG"];
+	/*
+	var photoFileRoutes = ["images/0_empty.JPG", "images/1_John.JPG", "images/2_Rosalie.JPG",
+						   "images/3_Dan.JPG", "images/4_Laura.JPG", "images/5_Marianne.JPG",
+						   "images/6_George.JPG", "images/7_Matt.JPG", "images/8_Tom.JPG",
+						   "images/9_Midori.JPG", "images/10_Shiffman.JPG", "images/11_John_Matt.JPG"];
+	*/
+	var finishedLoadingPics = false;
+	var inTheZone, pastChange;
 //
+
+// WEB_AUDIO_API!
+	var context, bufferLoader, convolver, mixer;
+	var source, buffer, audioBuffer, gainNode, convolverGain;
+	var mediaStreamSource;
+	var samples = 1024;
+	var soundLoaded = false;
+	var mainVolume;
+
+	var sound_sweet = {};
+	var sweetSource;
+
+	var vecZ = new THREE.Vector3(0,0,1);
+	var vecY = new THREE.Vector3(0,-1,0);
+	var sswM, sswX, sswY, sswZ;
+	var camM, camMX, camMY, camMZ;	
+
+	//
+	window.AudioContext = (window.AudioContext || window.webkitAudioContext || null);
+	if(!AudioContext){
+		throw new Error("AudioContext not supported!");
+	}
+	context = new AudioContext();
+
+	//
+	// var sample = new SoundsSample(context);
+
+
+///////////////////////////////////////////////////////////////
 
 init();
 animate();
 
+///////////////////////////////////////////////////////////////
+
 function init() {
+	// WEB_AUDIO_API
+	bufferLoader = new BufferLoader(
+    	context, ['../audios/Gordie_sweet.mp3'], 	// #0
+    			  finishedLoading
+    	);
+    bufferLoader.load();
+
+
 	time = Date.now();
 
 	renderer = new THREE.WebGLRenderer({
@@ -164,6 +218,15 @@ function init() {
 		}
 	}
 
+	//
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '5px';
+	stats.domElement.style.zIndex = 100;
+	stats.domElement.children[ 0 ].style.background = "transparent";
+	stats.domElement.children[ 0 ].children[1].style.display = "none";
+	container.appendChild(stats.domElement);
+
 
 	var onTouchStart = function ( event ) {
 		// console.log("touch!");
@@ -183,25 +246,83 @@ function init() {
 	setTimeout(resize, 1);
 
 	// texture
-	for(var i=0; i<photoFileRoutes.length; i++){
-		var pp = THREE.ImageUtils.loadTexture( photoFileRoutes[i] );
-		photos.push(pp);
-	}
-
-	ballMat = new THREE.MeshBasicMaterial({map: photos[0]});
-
-	loadModelBall( 'models/360ball_2.js', ballMat );
+	loadModelBall( 'models/360ball_2.js' );
 
 	//
 	animate();
+
+	// audio!
+	if(samplesAllLoaded)
+		sample.trigger(0, 1);
 }
 
-function loadModelBall(model, material) {
+function finishedLoading(bufferList){
+
+	bufferStorage = bufferList;
+
+	mainVolume = context.createGain();
+	mainVolume.connect(context.destination);
+	//
+
+	sound_sweet.source = context.createBufferSource();
+	sound_sweet.source.buffer = bufferList[0];
+	sound_sweet.source.loop = true;
+	sound_sweet.gainNode = context.createGain();
+	sound_sweet.gainNode.gain.value = 2;
+	sound_sweet.source.connect(sound_sweet.gainNode);
+
+	// sound_sweet.panner = context.createPanner();
+	// sound_sweet.gainNode.connect(sound_sweet.panner);
+	// sound_sweet.panner.connect(mainVolume);
+
+	sound_sweet.gainNode.connect(mainVolume);
+
+	// start to PLAY!
+	// sound_empty.source.start(context.currentTime);
+	sound_sweet.source.start(context.currentTime);
+
+	//
+	// Sweet source
+	// geometry = new THREE.SphereGeometry(1);
+	// material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+	// sweetSource = new THREE.Mesh(geometry, material);
+	// sweetSource.scale.set(0.01,0.01,0.01);
+	// sweetSource.position.set(0,0,5);
+	// scene.add(sweetSource);
+
+	// sswM = sweetSource.matrixWorld;
+	// sswX = sswM.elements[12];
+	// sswY = sswM.elements[13];
+	// sswZ = sswM.elements[14];
+	// sswM.elements[12] = sswM.elements[13] = sswM.elements[14] = 0;
+
+	// vecZ.applyProjection(sswM);
+	// vecZ.normalize();
+
+	// sound_sweet.panner.setOrientation(vecZ.x, vecZ.y, vecZ.z);
+
+	// sswM.elements[12] = sswX;
+	// sswM.elements[13] = sswY;
+	// sswM.elements[14] = sswZ;
+
+	console.log("finish loading!");
+}
+
+function loadModelBall(model) {
 	var loader = new THREE.JSONLoader();
 	loader.load(model, function(geometry){
-		ball = new THREE.Mesh( geometry, material );
+
+		// textures
+		for(var i=0; i<photoFileRoutes.length; i++){
+			var pp = THREE.ImageUtils.loadTexture( photoFileRoutes[i] );
+			photos.push(pp);
+		}
+		ballMat = new THREE.MeshBasicMaterial({map: photos[0]});
+		ball = new THREE.Mesh( geometry, ballMat );
 		ball.scale.set(5,5,5);
 		scene.add(ball);
+
+		finishedLoadingPics = true;
 	}, "js");
 }
 
@@ -246,6 +367,22 @@ function resize() {
 
 var trigger = false;
 var pastChange = false;
+var doneIt = false;
+var doneItIndex = 0;
+var preDisplay = setInterval( preDisplayFunc, 100);
+
+function preDisplayFunc() {
+	if(finishedLoadingPics && !doneIt){
+		ball.material.map = photos[doneItIndex];
+		doneItIndex ++;
+		console.log("ahhh");
+
+		if(doneItIndex == photos.length){
+			doneIt = true;
+			clearInterval(preDisplay);
+		}
+	}
+}
 
 function update(dt) {
 	resize();
@@ -255,7 +392,18 @@ function update(dt) {
 	// controls.update(dt);
 	controls.update(Date.now() - time);
 
-	var conRot = controls.rotation().y%3;
+	var conRot = controls.rotation().y%Math.PI;
+
+	// loop through all the textures and display them
+	// if(finishedLoadingPics && !doneIt){
+	// 	ball.material.map = photos[doneItIndex];
+	// 	doneItIndex ++;
+	// 	console.log("ahhh");
+
+	// 	if(doneItIndex == photos.length){
+	// 		doneIt = true;
+	// 	}
+	// }
 
 	// once conRot is in the zone of -0.0 ~ -1.5
 	// picture: changes
@@ -271,6 +419,8 @@ function update(dt) {
 		inTheZone = false;
 	}
 	// console.log(conRott);
+
+	stats.update();
 
 	time = Date.now();
 }
