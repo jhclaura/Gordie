@@ -3,13 +3,29 @@
 // By Boris Smus
 
 var samplesAllLoaded = false;
+var hasSound = [0,0,0,
+                1,1,1,
+                0,0,0,
+                0,1,0,
+                0,0,1,
+                0,1,0,
+                0,0,1,
+                0,1,1];
 
 function SoundsSample(context) {
 
   var ctx = this;
   var loader = new BufferLoader(context, 
-            ['../audios/jason.mp3',
-            '../audios/3_danOo.mp3'], onLoaded);
+            [ '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/9_Midori.mp3',
+              '../audios/3_danOo.mp3', '../audios/4_laura.mp3', '../audios/5_Marianne.mp3',
+              '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/9_Midori.mp3',
+              '../audios/9_Midori.mp3', '../audios/10_shiffman.mp3', '../audios/9_Midori.mp3',
+              '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/14_Katherine.mp3',
+              '../audios/9_Midori.mp3', '../audios/16_nancy.mp3', '../audios/9_Midori.mp3',
+              '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/20_marlon.mp3',
+              '../audios/9_Midori.mp3', '../audios/22_sam.mp3', '../audios/23_oryan.mp3',
+              '../audios/andy.mp3', '../audios/gladys.mp3', '../audios/jason.mp3'   // #24-
+              ], onLoaded);
 
   function onLoaded(buffers) {
     ctx.buffers = buffers;
