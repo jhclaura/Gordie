@@ -14,7 +14,7 @@
   <script src="js/third-party/threejs/StereoEffect.js"></script>
   <script type="text/javascript" src="js/third-party/stats.min.js"></script>
   <script type="text/javascript" src="js/BufferLoader.js"></script>
-  <script type="text/javascript" src="js/samples.js"></script>
+  <script type="text/javascript" src="js/samples_v2.js"></script>
 
   <script src="js/DeviceControls_laura.js"></script>
 
@@ -46,7 +46,7 @@
       //       <img width="60" height="60" src="images/click.gif">
       //     </div>
       //   </div>
-    if( !isTouchDevice() ) {
+    if( !isMobile ) {
         var clickDiv = document.createElement('div');
         clickDiv.id = "blocker";
         clickDiv.style = "display: -webkit-box;";

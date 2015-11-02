@@ -102,6 +102,7 @@
 
 	var clock = new THREE.Clock();
 
+	
 	var photoFileRoutes = ["images/0_empty.JPG", "images/1_John.JPG", "images/2_Rosalie.JPG",
 						   "images/3_Dan.JPG", "images/4_Laura.JPG", "images/5_Marianne.JPG",
 						   "images/6_George.JPG", "images/7_Matt.JPG", "images/8_Tom.JPG",
@@ -110,6 +111,17 @@
 						   "images/15_Gabe.JPG", "images/16_Nancy.JPG", "images/17_Shawn.JPG",
 						   "images/18_Mimi.JPG", "images/19_Lauren.JPG", "images/20_Marlon.JPG",
 						   "images/21_Pedro.JPG", "images/22_Sam.JPG", "images/23_Oryan.JPG"];
+						   
+
+	/*
+	var photoFileRoutes = ["images/1_John.JPG", "images/2_Rosalie.JPG",
+						   "images/3_Dan.JPG", "images/4_Laura.JPG", "images/5_Marianne.JPG",
+						   "images/6_George.JPG", "images/7_Matt.JPG", "images/8_Tom.JPG",
+						   "images/9_Midori.JPG", "images/10_Shiffman.JPG", "images/11_John_Matt.JPG",
+						   "images/12_Gabriel.JPG", "images/13_Danny.JPG", "images/14_Katherine.JPG",
+						   "images/15_Gabe.JPG", "images/16_Nancy.JPG", "images/17_Shawn.JPG",
+						   "images/18_Mimi.JPG", "images/19_Lauren.JPG"];*/
+						   
 
 	var finishedLoadingPics = false;
 	var inTheZone, pastChange;
@@ -118,26 +130,21 @@
 //
 
 // WEB_AUDIO_API!
-	var context, bufferLoader, convolver, mixer;
+	var context, usingWebAudio = true, bufferLoader, convolver, mixer;
 	var source, buffer, audioBuffer, gainNode, convolverGain;
-	var mediaStreamSource;
-	var samples = 1024;
 	var soundLoaded = false;
-	var mainVolume;
+	var masterGain;
 
 	var sound_sweet = {};
 	var sweetSource;
 
-	var vecZ = new THREE.Vector3(0,0,1);
-	var vecY = new THREE.Vector3(0,-1,0);
-	var sswM, sswX, sswY, sswZ;
-	var camM, camMX, camMY, camMZ;	
+	var _iOSEnabled = false;
 
-	//
-	// context = new (window.AudioContext || window.webkitAudioContext)();
+	// v1
 	try {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		context = new AudioContext();
+		console.log(context);
 	}
 	catch(e){
 		alert('Web Audio API is not supported in this browser');
@@ -200,11 +207,6 @@ function init() {
 	light.position.set(1,1,1);
 	scene.add(light);
 
-	// test spheres
-	var geometry = new THREE.SphereGeometry(1);
-	var material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
-	var mesh;
-
 	//
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -219,6 +221,8 @@ function init() {
 		// console.log("touch!");
 		picIndex++;
 		ball.material.map = photos[picIndex%4];
+
+		// sound_sweet.source.noteOn(context.currentTime);
 	}
 	
 	window.addEventListener('resize', resize, false);
@@ -227,7 +231,46 @@ function init() {
 
 	if(isMobile) {
 		document.addEventListener( 'touchstart', onTouchStart, false );
-		// document.addEventListener( 'touchend', onTouchEnd, false );
+	}
+
+	var unlock = function() {
+		console.log("do unlock");
+        // create an empty buffer
+        var buffer = context.createBuffer(1, 1, 22050);
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+
+        // play the empty buffer
+        if (typeof source.start === 'undefined') {
+          source.noteOn(0);
+        } else {
+          source.start(0);
+        }
+
+        // setup a timeout to check that we are unlocked on the next event loop
+        setTimeout(function() {
+          if ((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
+            // update the unlocked state and prevent this check from happening again
+            _iOSEnabled = true;
+            // remove the touch start listener
+            console.log("unlock succeed!");
+
+   //          if (typeof sound_sweet.source.start === 'undefined') {
+			//   sound_sweet.source.noteOn(context.currentTime);
+			// } else {
+			//   sound_sweet.source.start(context.currentTime);
+			//   // console.log("play!");
+			// }
+
+            window.removeEventListener('touchend', unlock, false);
+          }
+        }, 0);
+     };
+
+	if( !_iOSEnabled && /iPhone|iPad|iPod/i.test(navigator.userAgent) ) {
+      // setup a touch start listener to attempt an unlock in
+      window.addEventListener('touchend', unlock, false);
 	}
 
 	setTimeout(resize, 1);
@@ -240,7 +283,7 @@ function init() {
 
 	// audio!
 	if(samplesAllLoaded)
-		sample.trigger(0, 1);
+		sample.trigger(4, 1);
 }
 
 
@@ -248,47 +291,29 @@ function finishedLoading(bufferList){
 
 	bufferStorage = bufferList;
 
-	// mainVolume = context.createGain();
+	masterGain = (typeof context.createGain === 'undefined') ? context.createGainNode() : context.createGain();
+	masterGain.gain.value = 2;
+	masterGain.connect(context.destination);
+
+	console.log("create masterGain");
 
 	sound_sweet.source = context.createBufferSource();
 	sound_sweet.source.buffer = bufferList[0];
 	sound_sweet.source.loop = true;
-	// sound_sweet.gainNode = context.createGain();
-	// sound_sweet.gainNode.gain.value = 2;
-	// sound_sweet.source.connect(sound_sweet.gainNode);
-	// sound_sweet.gainNode.connect(mainVolume);
-	// mainVolume.connect(context.destination);
 
-	sound_sweet.source.connect(context.destination);
+	sound_sweet.gainNode = (typeof context.createGain === 'undefined') ? context.createGainNode() : context.createGain();
+	sound_sweet.gainNode.gain.value = 1;
+	sound_sweet.source.connect(sound_sweet.gainNode);
+	sound_sweet.gainNode.connect(masterGain);
 
-	// start to PLAY!
-	// sound_sweet.source.start(context.currentTime);
-	sound_sweet.source.start(0);
-	// sound_sweet.play();
+	// sound_sweet.source.play();
 
-	//
-	// Sweet source
-	// geometry = new THREE.SphereGeometry(1);
-	// material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-	// sweetSource = new THREE.Mesh(geometry, material);
-	// sweetSource.scale.set(0.01,0.01,0.01);
-	// sweetSource.position.set(0,0,5);
-	// scene.add(sweetSource);
-
-	// sswM = sweetSource.matrixWorld;
-	// sswX = sswM.elements[12];
-	// sswY = sswM.elements[13];
-	// sswZ = sswM.elements[14];
-	// sswM.elements[12] = sswM.elements[13] = sswM.elements[14] = 0;
-
-	// vecZ.applyProjection(sswM);
-	// vecZ.normalize();
-
-	// sound_sweet.panner.setOrientation(vecZ.x, vecZ.y, vecZ.z);
-
-	// sswM.elements[12] = sswX;
-	// sswM.elements[13] = sswY;
-	// sswM.elements[14] = sswZ;
+	if (typeof sound_sweet.source.start === 'undefined') {
+      sound_sweet.source.noteGrainOn(context.currentTime);
+    } else {
+      sound_sweet.source.start(0);
+      console.log("play!");
+    }
 
 	console.log("finish loading!");
 }
@@ -319,7 +344,7 @@ function myKeyPressed (event) {
 
 	switch ( event.keyCode ) {
 
-		case 49: //1 --> p1
+		case 49: //1
 			console.log("touch!");
 			picIndex++;
 			ball.material.map = photos[picIndex%photoFileRoutes.length];
@@ -400,37 +425,6 @@ function update(dt) {
 	// console.log(conRott);
 
 	stats.update();
-
-	// SOUND
-	context.listener.setPosition( currentCamPos.x, currentCamPos.y, currentCamPos.z );
-	if(sound_sweet.panner) {
-		sound_sweet.panner.setPosition( sweetSource.position.x, sweetSource.position.y, sweetSource.position.z );
-
-		// orientation
-		camM = controls.getObject().matrix;
-
-		camMX = camM.elements[12];
-		camMY = camM.elements[13];
-		camMZ = camM.elements[14];
-		camM.elements[12] = camM.elements[13] = camM.elements[14] = 0;
-
-		// Multiply the orientation vector by the world matrix of the camera.
-		var vec = new THREE.Vector3(0,0,1);
-		vec.applyProjection(camM);
-		vec.normalize();
-
-		// Multiply the up vector by the world matrix.
-		var up = new THREE.Vector3(0,-1,0);
-		up.applyProjection(camM);
-		up.normalize();
-
-		// Set the orientation and the up-vector for the listener.
-		context.listener.setOrientation(vec.x, vec.y, vec.z, up.x, up.y, up.z);
-
-		camM.elements[12] = camMX;
-		camM.elements[13] = camMY;
-		camM.elements[14] = camMZ;
-	}
 
 	//
 	time = Date.now();

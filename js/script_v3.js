@@ -134,14 +134,11 @@
 	var camM, camMX, camMY, camMZ;	
 
 	//
-	// context = new (window.AudioContext || window.webkitAudioContext)();
-	try {
-		window.AudioContext = window.AudioContext || window.webkitAudioContext;
-		context = new AudioContext();
+	window.AudioContext = (window.AudioContext || window.webkitAudioContext || null);
+	if(!AudioContext){
+		throw new Error("AudioContext not supported!");
 	}
-	catch(e){
-		alert('Web Audio API is not supported in this browser');
-	}
+	context = new AudioContext();
 
 	//
 	// var sample = new SoundsSample(context);
@@ -248,23 +245,26 @@ function finishedLoading(bufferList){
 
 	bufferStorage = bufferList;
 
-	// mainVolume = context.createGain();
+	mixer = context.createGain();
+	mainVolume = context.createGain();
+	mainVolume.connect(context.destination);
 
 	sound_sweet.source = context.createBufferSource();
 	sound_sweet.source.buffer = bufferList[0];
 	sound_sweet.source.loop = true;
-	// sound_sweet.gainNode = context.createGain();
-	// sound_sweet.gainNode.gain.value = 2;
-	// sound_sweet.source.connect(sound_sweet.gainNode);
-	// sound_sweet.gainNode.connect(mainVolume);
-	// mainVolume.connect(context.destination);
+	sound_sweet.gainNode = context.createGain();
+	sound_sweet.gainNode.gain.value = 2;
+	sound_sweet.source.connect(sound_sweet.gainNode);
 
-	sound_sweet.source.connect(context.destination);
+	// sound_sweet.panner = context.createPanner();
+	// sound_sweet.gainNode.connect(sound_sweet.panner);
+	// sound_sweet.panner.connect(mainVolume);
+
+	sound_sweet.gainNode.connect(mainVolume);
 
 	// start to PLAY!
-	// sound_sweet.source.start(context.currentTime);
-	sound_sweet.source.start(0);
-	// sound_sweet.play();
+	// sound_empty.source.start(context.currentTime);
+	sound_sweet.source.start(context.currentTime);
 
 	//
 	// Sweet source
