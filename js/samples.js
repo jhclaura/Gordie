@@ -3,7 +3,7 @@
 // By Boris Smus
 
 var samplesAllLoaded = false;
-var hasSound = [0,0,0,
+var hasSound = [0,0,1,
                 1,1,1,
                 0,0,0,
                 1,1,0,
@@ -11,13 +11,14 @@ var hasSound = [0,0,0,
                 0,1,0,
                 0,0,1,
                 0,1,1,
-                1,1,1];
+                1,1,1,
+                1,1];
 
 function SoundsSample(context) {
 
   var ctx = this;
   var loader = new BufferLoader(context, 
-            [ '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/9_Midori.mp3',
+            [ '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/2_rosalie.mp3',
               '../audios/3_danOo.mp3', '../audios/4_laura.mp3', '../audios/5_Marianne.mp3',
               '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/9_Midori.mp3',
               '../audios/9_Midori.mp3', '../audios/10_shiffman.mp3', '../audios/9_Midori.mp3',
@@ -25,7 +26,8 @@ function SoundsSample(context) {
               '../audios/9_Midori.mp3', '../audios/16_nancy.mp3', '../audios/9_Midori.mp3',
               '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/20_marlon.mp3',
               '../audios/9_Midori.mp3', '../audios/22_sam.mp3', '../audios/23_oryan.mp3',
-              '../audios/24_gladys.mp3', '../audios/25_andy.mp3', '../audios/26_jason.mp3'   // #24-
+              '../audios/24_gladys.mp3', '../audios/25_andy.mp3', '../audios/26_jason.mp3',
+              '../audios/27_moon.mp3', '../audios/28_julia.mp3'   // #24-
               ], onLoaded);
 
   function onLoaded(buffers) {
@@ -73,7 +75,7 @@ SoundsSample.prototype.makeSource = function(buffer) {
     gain.connect(compressor);
     compressor.connect(context.destination);
   } else {
-    gain.connect(masterGain);
+    gain.connect(sampleGain);
   }
   return source;
 };
@@ -93,7 +95,7 @@ SoundsSample.prototype.makeSource = function(buffer, volume) {
     gain.connect(compressor);
     compressor.connect(context.destination);
   } else {
-    gain.connect(context.destination);
+    gain.connect(sampleGain);
   }
   return source;
 };
