@@ -6,11 +6,12 @@ var samplesAllLoaded = false;
 var hasSound = [0,0,0,
                 1,1,1,
                 0,0,0,
-                0,1,0,
+                1,1,0,
                 0,0,1,
                 0,1,0,
                 0,0,1,
-                0,1,1];
+                0,1,1,
+                1,1,1];
 
 function SoundsSample(context) {
 
@@ -24,7 +25,7 @@ function SoundsSample(context) {
               '../audios/9_Midori.mp3', '../audios/16_nancy.mp3', '../audios/9_Midori.mp3',
               '../audios/9_Midori.mp3', '../audios/9_Midori.mp3', '../audios/20_marlon.mp3',
               '../audios/9_Midori.mp3', '../audios/22_sam.mp3', '../audios/23_oryan.mp3',
-              '../audios/andy.mp3', '../audios/gladys.mp3', '../audios/jason.mp3'   // #24-
+              '../audios/24_gladys.mp3', '../audios/25_andy.mp3', '../audios/26_jason.mp3'   // #24-
               ], onLoaded);
 
   function onLoaded(buffers) {
@@ -72,7 +73,7 @@ SoundsSample.prototype.makeSource = function(buffer) {
     gain.connect(compressor);
     compressor.connect(context.destination);
   } else {
-    gain.connect(context.destination);
+    gain.connect(masterGain);
   }
   return source;
 };

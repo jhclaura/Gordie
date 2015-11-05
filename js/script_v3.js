@@ -403,6 +403,7 @@ function update(dt) {
 
 	// SOUND
 	context.listener.setPosition( currentCamPos.x, currentCamPos.y, currentCamPos.z );
+	
 	if(sound_sweet.panner) {
 		sound_sweet.panner.setPosition( sweetSource.position.x, sweetSource.position.y, sweetSource.position.z );
 

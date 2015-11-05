@@ -6,64 +6,57 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/style.css">
   </head>
-  <body>
 
+  <body>
     <div id="render_canvas"></div>
 
-  <script src="js/third-party/threejs/three.js"></script>
-  <script src="js/third-party/threejs/StereoEffect.js"></script>
-  <script type="text/javascript" src="js/third-party/stats.min.js"></script>
-  <script type="text/javascript" src="js/BufferLoader.js"></script>
-  <script type="text/javascript" src="js/samples.js"></script>
+    <script type="text/javascript" src="js/third-party/threejs/three.js"></script>
+    <script type="text/javascript" src="js/third-party/threejs/StereoEffect.js"></script>
+    <script type="text/javascript" src="js/third-party/stats.min.js"></script>
+    <script type="text/javascript" src="js/BufferLoader.js"></script>
+    <script type="text/javascript" src="js/samples.js"></script>
 
-  <script src="js/DeviceControls_laura.js"></script>
+    <script type="text/javascript" src="js/DeviceControls_laura.js"></script>
 
-  <script>
-    //device detection
-    //source: http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
-    var isMobile = false; //initiate as false
-    var whichMobile = "";
-    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      isMobile = true;
-    }
-    console.log("isMobile: " + isMobile);
+    <script>
+      //device detection
+      //source: http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
+      var isMobile = false; //initiate as false
+      var whichMobile = "";
+      if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+        isMobile = true;
+      }
+      console.log("isMobile: " + isMobile);
 
-    // tell android or iOS
-    if( /Android/i.test(navigator.userAgent) ) {
-      console.log("I'm android!");
-      whichMobile = "android";
-    }
+      // tell android or iOS
+      if( /Android/i.test(navigator.userAgent) ) {
+        console.log("I'm android!");
+        whichMobile = "android";
+      }
+      if( /iPhone|iPad|iPod/i.test(navigator.userAgent) ) {
+        console.log("I'm iOS!");
+        whichMobile = "iOS_mobile";
+      }
 
-    if( /iPhone/i.test(navigator.userAgent) ) {
-      console.log("I'm iPhone!");
-      whichMobile = "iphone";
-    }
+      // if it's desktop, create click.gif div for PointerlockAPI
+      if( !isTouchDevice() ) {
+          var clickDiv = document.createElement('div');
+          clickDiv.id = "blocker";
+          clickDiv.style = "display: -webkit-box;";
+          document.getElementsByTagName("body")[0].appendChild(clickDiv);
 
-    // if it's desktop, create click.gif div
-    // reference:
-      // <div id="blocker" style="display: -webkit-box;">
-      //     <div id="instructions" >
-      //       <img width="60" height="60" src="images/click.gif">
-      //     </div>
-      //   </div>
-    if( !isTouchDevice() ) {
-        var clickDiv = document.createElement('div');
-        clickDiv.id = "blocker";
-        clickDiv.style = "display: -webkit-box;";
-        document.getElementsByTagName("body")[0].appendChild(clickDiv);
+          var ins = document.createElement('div');
+          ins.id = "instructions";
+          var fingerImg = document.createElement('img');
+          fingerImg.setAttribute("src", "images/click.gif");
+          fingerImg.setAttribute("width", "60");
+          fingerImg.setAttribute("height", "60");
+          ins.appendChild(fingerImg);
+          clickDiv.appendChild(ins);
+      }
+    </script>
 
-        var ins = document.createElement('div');
-        ins.id = "instructions";
-        var fingerImg = document.createElement('img');
-        fingerImg.setAttribute("src", "images/click.gif");
-        fingerImg.setAttribute("width", "60");
-        fingerImg.setAttribute("height", "60");
-        ins.appendChild(fingerImg);
-        clickDiv.appendChild(ins);
-    }
-  </script>
-
-  <script src="js/script_sound.js"></script>
+    <script type="text/javascript" src="js/script_v4.js"></script>
 
   </body>
 </html>

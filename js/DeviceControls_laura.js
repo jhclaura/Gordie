@@ -487,11 +487,14 @@ THREE.DeviceControls = function ( camera ) {
 		return function( v ) {
 			var v = new THREE.Vector3( 0, 0, -1 );
 
-			if(thisIsTouchDevice) 
+			if(thisIsTouchDevice) {
 				rotation.set( yawObject.rotation.x, yawObject.rotation.y, 0 );
-			else
+				v.copy( direction ).applyQuaternion( yawObject.quaternion );
+			}
+			else {
 				rotation.set( pitchObject.rotation.x, yawObject.rotation.y, 0 );
-			v.copy( direction ).applyEuler( rotation );
+				v.copy( direction ).applyEuler( rotation );
+			}
 
 			return v;
 		}

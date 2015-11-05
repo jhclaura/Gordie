@@ -110,23 +110,17 @@
 						   "images/12_Gabriel.JPG", "images/13_Danny.JPG", "images/14_Katherine.JPG",
 						   "images/15_Gabe.JPG", "images/16_Nancy.JPG", "images/17_Shawn.JPG",
 						   "images/18_Mimi.JPG", "images/19_Lauren.JPG", "images/20_Marlon.JPG",
-						   "images/21_Pedro.JPG", "images/22_Sam.JPG", "images/23_Oryan.JPG"];
-						   
-
-	/*
-	var photoFileRoutes = ["images/1_John.JPG", "images/2_Rosalie.JPG",
-						   "images/3_Dan.JPG", "images/4_Laura.JPG", "images/5_Marianne.JPG",
-						   "images/6_George.JPG", "images/7_Matt.JPG", "images/8_Tom.JPG",
-						   "images/9_Midori.JPG", "images/10_Shiffman.JPG", "images/11_John_Matt.JPG",
-						   "images/12_Gabriel.JPG", "images/13_Danny.JPG", "images/14_Katherine.JPG",
-						   "images/15_Gabe.JPG", "images/16_Nancy.JPG", "images/17_Shawn.JPG",
-						   "images/18_Mimi.JPG", "images/19_Lauren.JPG"];*/
-						   
+						   "images/21_Pedro.JPG", "images/22_Sam.JPG", "images/23_Oryan.JPG",
+						   "images/24_Gladys.JPG", "images/25_Andy.JPG", "images/26_Jason.JPG"];						   
 
 	var finishedLoadingPics = false;
 	var inTheZone, pastChange;
 
 	var currentCamPos;
+
+	var eyerayCaster, lookDummy;
+	var changeBoxA, changeBoxB;
+	var toBackStatus = false, toBackStatusPast = false;
 //
 
 // WEB_AUDIO_API!
@@ -137,10 +131,13 @@
 
 	var sound_sweet = {};
 	var sweetSource;
+	var vecZ = new THREE.Vector3(0,0,1);
+	var vecY = new THREE.Vector3(0,-1,0);
+	var sswM, sswX, sswY, sswZ;
+	var camM, camMX, camMY, camMZ;	
 
 	var _iOSEnabled = false;
 
-	// v1
 	try {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		context = new AudioContext();
@@ -172,12 +169,12 @@ function init() {
 	time = Date.now();
 
 	// THREE.JS
+	///////////////////////////////////////////////////////////////
 	renderer = new THREE.WebGLRenderer({
 		antialias: true,
 		alpha: true
 	});
 	renderer.setClearColor(0x001320, 1);
-	// renderer.setPixelRatio( window.devicePixelRatio );	//add
 	renderer.autoClear = false;
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	// 
@@ -186,28 +183,22 @@ function init() {
 	container.appendChild(renderElement);
 
 	effect = new THREE.StereoEffect(renderer);
-	//
 	effect.separation = 0.2;
     effect.targetDistance = 50;
     effect.setSize(window.innerWidth, window.innerHeight);
     //
 
 	scene = new THREE.Scene();
-
 	// camera = new THREE.PerspectiveCamera(90, 1, 0.001, 700);
 	camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000);
-
-	// v_Laura
 	controls = new THREE.DeviceControls(camera, true);
 	scene.add( controls.getObject() );
-	window.addEventListener('click', fullscreen, false);
 
-	///////////////////////////////////////////////////////////////
 	var light = new THREE.DirectionalLight( 0xffffff, 1 );
 	light.position.set(1,1,1);
 	scene.add(light);
 
-	//
+	///////////////////////////////////////////////////////////////
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.bottom = '5px';
@@ -216,13 +207,11 @@ function init() {
 	stats.domElement.children[ 0 ].children[1].style.display = "none";
 	container.appendChild(stats.domElement);
 
-	//
+	///////////////////////////////////////////////////////////////
 	var onTouchStart = function ( event ) {
 		// console.log("touch!");
 		picIndex++;
 		ball.material.map = photos[picIndex%photoFileRoutes.length];
-
-		// sound_sweet.source.noteOn(context.currentTime);
 
 		if(samplesAllLoaded && hasSound[picIndex]==1){
 			if(whichMobile == "iOS_mobile" && !_iOSEnabled) {
@@ -232,6 +221,7 @@ function init() {
 		}
 	}
 	
+	window.addEventListener('click', fullscreen, false);
 	window.addEventListener('resize', resize, false);
 	document.addEventListener( 'keydown', myKeyPressed, false );
 	document.addEventListener( 'keyup', myKeyReleased, false );
@@ -240,6 +230,9 @@ function init() {
 		document.addEventListener( 'touchstart', onTouchStart, false );
 	}
 
+	// enable Web Audio API on iOS, reference:
+	// 1) Howler.js
+	// 2) http://matt-harrison.com/perfect-web-audio-on-ios-devices-with-the-web-audio-api/
 	var unlock = function() {
 		console.log("do unlock");
         // create an empty buffer
@@ -275,8 +268,44 @@ function init() {
 
 	setTimeout(resize, 1);
 
-	// texture
+	// test cubes
+	// var geometry = new THREE.SphereGeometry(1);
+	// var material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
+	// var mesh;
+	// for(var i=0; i<50; i+=10){
+	// 	for(var j=0; j<50; j+=10){
+	// 		mesh = new THREE.Mesh(geometry, material);
+	// 		mesh.position.set(i-25,0,j-25);
+	// 		scene.add(mesh);
+	// 		boxes.push(mesh);
+	// 	}
+	// }
+
+	// sphere for 360 sphere
 	loadModelBall( 'models/360ball_2.js' );
+
+	geometry = new THREE.BoxGeometry(1,20,20);
+	material = new THREE.MeshBasicMaterial({color: 0xffff00, transparent: true, opacity: 0});		// transparent: true, opacity: 0
+	changeBoxA = new THREE.Mesh(geometry.clone(), material);
+	changeBoxA.position.x = 3;
+	changeBoxA.name = "changeBoxA";
+	scene.add(changeBoxA);
+
+	// geometry = new THREE.BoxGeometry(5,5,5);
+	// changeBoxB = new THREE.Mesh(geometry.clone(), material);
+	// changeBoxB.position.x = -10;
+	// changeBoxB.position.z = 10;
+	// changeBoxB.name = "changeBoxB";
+	// scene.add(changeBoxB);
+
+	//lookDummy
+		// projector = new THREE.Projector();
+		eyerayCaster = new THREE.Raycaster();
+
+		geometry = new THREE.SphereGeometry(1);
+		material = new THREE.MeshBasicMaterial({color: 0x00ffff, transparent: true, opacity: 0});
+		lookDummy = new THREE.Mesh(geometry, material);
+		scene.add(lookDummy);
 
 	//
 	animate();
@@ -292,7 +321,7 @@ function finishedLoading(bufferList){
 	bufferStorage = bufferList;
 
 	masterGain = (typeof context.createGain === 'undefined') ? context.createGainNode() : context.createGain();
-	masterGain.gain.value = 2;
+	masterGain.gain.value = 1;
 	masterGain.connect(context.destination);
 
 	console.log("create masterGain");
@@ -302,16 +331,44 @@ function finishedLoading(bufferList){
 	sound_sweet.source.loop = true;
 
 	sound_sweet.gainNode = (typeof context.createGain === 'undefined') ? context.createGainNode() : context.createGain();
-	sound_sweet.gainNode.gain.value = 1;
+	sound_sweet.gainNode.gain.value = 3;
 	sound_sweet.source.connect(sound_sweet.gainNode);
-	sound_sweet.gainNode.connect(masterGain);
 
-	// sound_sweet.source.play();
+	sound_sweet.panner = context.createPanner();
+	sound_sweet.gainNode.connect(sound_sweet.panner);
+	sound_sweet.panner.connect(masterGain);
 
+	// Sweet source
+		geometry = new THREE.SphereGeometry(5);
+		material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+		sweetSource = new THREE.Mesh(geometry, material);
+		sweetSource.scale.set(0.1,0.1,0.1);
+		sweetSource.position.set(20,0,0);
+		sweetSource.name = "sweetSource";
+		scene.add(sweetSource);
+
+		var vecc = new THREE.Vector3(0,0,1);
+
+		sswM = sweetSource.matrixWorld;
+		sswX = sswM.elements[12];
+		sswY = sswM.elements[13];
+		sswZ = sswM.elements[14];
+		sswM.elements[12] = sswM.elements[13] = sswM.elements[14] = 0;
+
+		vecc.applyProjection(sswM);
+		vecc.normalize();
+
+		sound_sweet.panner.setOrientation(vecc.x, vecc.y, vecc.z);
+
+		sswM.elements[12] = sswX;
+		sswM.elements[13] = sswY;
+		sswM.elements[14] = sswZ;
+
+	//
 	if (typeof sound_sweet.source.start === 'undefined') {
       sound_sweet.source.noteOn(context.currentTime);
     } else {
-      sound_sweet.source.start(0);
+      sound_sweet.source.start(context.currentTime);
       console.log("play!");
     }
 
@@ -330,6 +387,8 @@ function loadModelBall(model) {
 		ballMat = new THREE.MeshBasicMaterial({map: photos[0]});
 		ball = new THREE.Mesh( geometry, ballMat );
 		ball.scale.set(5,5,5);
+		ball.rotation.y -= 0.3;
+		ball.name = "ball";
 		scene.add(ball);
 
 		finishedLoadingPics = true;
@@ -410,35 +469,89 @@ function update(dt) {
 	controls.update(Date.now() - time);
 	currentCamPos = controls.position();
 
-	var conRot = controls.getDirection().y%Math.PI;
-	console.log(conRot);
+	//
+	context.listener.setPosition( currentCamPos.x, currentCamPos.y, currentCamPos.z );	
+	if(sound_sweet.panner) {
+		sound_sweet.panner.setPosition( sweetSource.position.x, sweetSource.position.y, sweetSource.position.z );
+		// orientation
+		camM = controls.getObject().matrix;
 
-	// once conRot is in the zone of -0.0 ~ -1.5
-	// picture: changes
-	// audio: 1)changes; 2)fade in out
-	if(ball && conRot<-0.0 && conRot>-1.5){
-		if(!inTheZone){
-			picIndex++;
-			ball.material.map = photos[picIndex%photoFileRoutes.length];
-			// console.log("picture: changes");
-			inTheZone = true;
+		camMX = camM.elements[12];
+		camMY = camM.elements[13];
+		camMZ = camM.elements[14];
+		camM.elements[12] = camM.elements[13] = camM.elements[14] = 0;
 
-			//
-			if(samplesAllLoaded && hasSound[picIndex]==1){
-				if(whichMobile == "iOS_mobile" && !_iOSEnabled) {
-					return;
-				}
-				sample.trigger(picIndex, 1);
-			}
-		}
-	}else{
-		inTheZone = false;
+		// Multiply the orientation vector by the world matrix of the camera.
+		var vec = new THREE.Vector3(0,0,1);
+		vec.applyProjection(camM);
+		vec.normalize();
+
+		// Multiply the up vector by the world matrix.
+		var up = new THREE.Vector3(0,-1,0);
+		up.applyProjection(camM);
+		up.normalize();
+
+		// Set the orientation and the up-vector for the listener.
+		context.listener.setOrientation(vec.x, vec.y, vec.z, up.x, up.y, up.z);
+
+		camM.elements[12] = camMX;
+		camM.elements[13] = camMY;
+		camM.elements[14] = camMZ;
 	}
-	// console.log(conRott);
 
-	stats.update();
+	//EYE_RAY!
+		var directionCam = controls.getDirection().clone();
+		eyerayCaster.set( controls.getObject().position.clone(), directionCam );
+		var eyeIntersects = eyerayCaster.intersectObjects( scene.children, true );
+		//console.log(intersects);
+
+		if ( eyeIntersects.length > 0 ) {
+			// console.log('hit');
+			// console.log(eyeIntersects[ 0 ].object);
+
+			if(eyeIntersects[ 0 ].object.name == "changeBoxA"){
+				toBackStatus = true;
+				toBackStatusPast = true;
+			}
+			else if(eyeIntersects[ 0 ].object.name == "sweetSource" || eyeIntersects[ 0 ].object.name == "ball") {
+				toBackStatus = false;
+
+				if(toBackStatusPast){
+					picIndex++;
+					ball.material.map = photos[picIndex%photoFileRoutes.length];
+
+					if(samplesAllLoaded && hasSound[picIndex%photoFileRoutes.length]==1){
+						if(whichMobile == "iOS_mobile" && !_iOSEnabled) {
+							return;
+						}
+						sample.trigger(picIndex%photoFileRoutes.length, 1);
+					}
+					console.log("change!");
+					toBackStatusPast = false;
+				}
+			}
+			// if(eyeIntersects[ 0 ].object.name == "changeBoxA"){
+			// 	if(!changeFromA){
+			// 		picIndex++;
+			// 		ball.material.map = photos[picIndex%photoFileRoutes.length];
+
+			// 		if(samplesAllLoaded && hasSound[picIndex]==1){
+			// 			if(whichMobile == "iOS_mobile" && !_iOSEnabled) {
+			// 				return;
+			// 			}
+			// 			sample.trigger(picIndex, 1);
+			// 		}
+			// 		changeFromA = true;
+			// 	}
+			// }
+			
+
+			// if(intersects[ 0 ].object.parent != scene)
+				lookDummy.position.copy(eyeIntersects[ 0 ].object.position);
+		}
 
 	//
+	stats.update();
 	time = Date.now();
 }
 
