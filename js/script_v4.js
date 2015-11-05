@@ -342,7 +342,7 @@ function finishedLoading(bufferList){
 
 	// Sweet source
 		geometry = new THREE.SphereGeometry(2);
-		material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+		material = new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0 });
 		sweetSource = new THREE.Mesh(geometry, material);
 		sweetSource.scale.set(0.1,0.1,0.1);
 		sweetSource.position.set(0,0,-2);
